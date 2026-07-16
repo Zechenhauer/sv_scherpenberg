@@ -233,6 +233,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-bottom: 2px;
         }
 
         /* Club Badge Styling */
@@ -244,6 +245,24 @@
             background-color: #21262d;
             border: 1px solid var(--border-color);
             padding: 4px;
+        }
+
+        /* Ausfallsicheres CSS-Ersatzwappen */
+        .club-logo-placeholder {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: #21262d;
+            border: 1.5px solid var(--primary-gold);
+            color: var(--primary-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
         }
 
         .vs-column {
@@ -489,7 +508,7 @@
         { id: 17, date: "So., 20.12.2026 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "SSVg Velbert 02", isHome: true }
     ];
 
-    // Dein Google Sheet CSV Link
+    // Google Sheet CSV Link
     const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRhmvj4ykmLeefYb0_88dVcHOo9uzAI383OFk79N8yFb94C9bNWgvQNEmJwLibwoyKiJe1xDPNjUnQ/pub?gid=0&single=true&output=csv";
 
     let matchResults = {};
@@ -518,7 +537,6 @@
             renderMatches(currentFilter);
         } catch (error) {
             console.error("Fehler beim Abrufen der Ergebnisse:", error);
-            alert("Die Verbindung zu Google Sheets konnte nicht hergestellt werden. Die App zeigt leere Standardergebnisse an.");
             spinner.style.display = "none";
             container.style.display = "grid";
             renderMatches(currentFilter);
@@ -545,7 +563,37 @@
     }
 
     function getLogoUrl(teamName) {
-        return clubLogos[teamName] || "https://upload.wikimedia.org/wikipedia/commons/e/e4/A_colored_soccer_ball.svg";
+        return clubLogos[teamName] || "";
+    }
+
+    // Fängt fehlerhafte Bildpfade ab und ersetzt sie sofort durch ein schickes CSS-Badge mit Initialen
+    function handleBadgeError(imgElement, teamName) {
+        imgElement.onerror = null; // Verhindert Endlosschleife
+        
+        // Ermittle sinnvolle Initialen aus dem Vereinsnamen (z.B. "SV Scherpenberg" -> "SVS")
+        const words = teamName.replace(/[\.\/]/g, '').split(' ').filter(w => w.length > 0);
+        let initials = "";
+        
+        if (words.length >= 2) {
+            // Nimm die ersten Buchstaben der ersten beiden Wörter (z.B. SV Scherpenberg -> SV)
+            initials = (words[0][0] + words[1][0]).toUpperCase();
+            // Falls es "SV" ist, versuchen wir das 3. Wort mitzunehmen falls vorhanden (z.B. SV Scherpenberg -> SVS)
+            if (words[0].toUpperCase() === "SV" && words[2]) {
+                initials = ("S" + words[1][0] + words[2][0]).toUpperCase();
+            }
+        } else if (words.length === 1) {
+            initials = words[0].slice(0, 3).toUpperCase();
+        } else {
+            initials = "⚽";
+        }
+
+        // Erstelle das stylische Platzhalter-Element
+        const placeholder = document.createElement("div");
+        placeholder.className = "club-logo-placeholder";
+        placeholder.textContent = initials;
+
+        // Ersetze das defekte Bild durch das Platzhalter-Badge
+        imgElement.parentNode.replaceChild(placeholder, imgElement);
     }
 
     function renderMatches(filter = "all") {
@@ -592,12 +640,12 @@
                     <div class="teams-display">
                         <div class="team-column">
                             <span class="team-label" style="${match.isHome ? 'color: var(--primary-gold); font-weight: 800;' : ''}">${match.teamHome}</span>
-                            <img class="club-logo" src="${getLogoUrl(match.teamHome)}" alt="${match.teamHome} Logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/e/e4/A_colored_soccer_ball.svg'">
+                            <img class="club-logo" src="${getLogoUrl(match.teamHome)}" alt="" onerror="handleBadgeError(this, '${match.teamHome}')">
                         </div>
                         <div class="vs-column">vs</div>
                         <div class="team-column">
                             <span class="team-label" style="${!match.isHome ? 'color: var(--primary-gold); font-weight: 800;' : ''}">${match.teamAway}</span>
-                            <img class="club-logo" src="${getLogoUrl(match.teamAway)}" alt="${match.teamAway} Logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/e/e4/A_colored_soccer_ball.svg'">
+                            <img class="club-logo" src="${getLogoUrl(match.teamAway)}" alt="" onerror="handleBadgeError(this, '${match.teamAway}')">
                         </div>
                     </div>
                     <div class="result-display-container">
