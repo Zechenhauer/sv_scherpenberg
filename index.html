@@ -379,7 +379,7 @@
         <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
             <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
         </svg>
-        <span>Dieses Dashboard wird synchronisiert von Jürgen Schützendorf.</span>
+        <span>Dieses Dashboard wird synchronisiert.</span>
     </div>
 
     <!-- Live Statistics Dashboard -->
@@ -429,10 +429,8 @@
 </div>
 
 <script>
-    // Variable für den aus Google Sheets abgerufenen Tabellenplatz
     let currentLeaguePosition = "-";
 
-    // Spielplan Hin u. Rückrunde 26/27
     const rawMatches = [
         { id: 1, date: "Fr., 14.08.2026 - 19:30 Uhr", teamHome: "SV Scherpenberg", teamAway: "ETB SW Essen", isHome: true },
         { id: 2, date: "So., 23.08.2026 - 15:00 Uhr", teamHome: "SV Sonsbeck", teamAway: "SV Scherpenberg", isHome: false },
@@ -470,7 +468,6 @@
         { id: 34, date: "Fr., 11.06.2027 - 19:30 Uhr", teamHome: "SSVg Velbert", teamAway: "SV Scherpenberg", isHome: false }
     ];
 
-    // Google Sheet CSV Link
     const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRhmvj4ykmLeefYb0_88dVcHOo9uzAI383OFk79N8yFb94C9bNWgvQNEmJwLibwoyKiJe1xDPNjUnQ/pub?gid=0&single=true&output=csv";
 
     let matchResults = {};
@@ -499,7 +496,7 @@
             renderMatches(currentFilter);
         } catch (error) {
             console.error("Fehler beim Abrufen der Ergebnisse:", error);
-            alert("Die Verbindung zu Google Sheets konnte nicht hergestellt werden. Die App zeigt leere Standardergebnisse an.");
+            alert("Die Verbindung zu Google Sheets konnte nicht hergestellt werden.");
             spinner.style.display = "none";
             container.style.display = "grid";
             renderMatches(currentFilter);
@@ -510,12 +507,13 @@
         const lines = csvText.split(/\r?\n/);
         if (lines.length <= 1) return;
 
-        // Prüfen, ob in Zeile 2 (Index 1) in Spalte E (Index 4) ein Tabellenplatz steht
+        // Liest den Tabellenplatz gezielt aus Zelle E2 (Index 1 in Zeilen, Index 4 in Spalten)
         const firstDataRow = lines[1].split(",");
         if (firstDataRow.length >= 5 && firstDataRow[4].trim() !== "") {
             currentLeaguePosition = firstDataRow[4].trim();
         }
 
+        // Liest die Ergebnisse ab Zeile 2 aus
         for (let i = 1; i < lines.length; i++) {
             const row = lines[i].split(",");
             if (row.length >= 3) {
@@ -629,7 +627,6 @@
             }
         });
 
-        // Tabellenplatz aus Google Sheet anzeigen (mit Punkt dahinter, z.B. "1.")
         document.getElementById("stats-position").textContent = currentLeaguePosition !== "-" ? `${currentLeaguePosition}.` : "-";
         document.getElementById("stats-played").textContent = `${played} / ${rawMatches.length}`;
         document.getElementById("stats-points").textContent = points;
