@@ -366,7 +366,7 @@
     <header>
         <div class="header-title">
             <h1>SV Scherpenberg <span>Live-Planer</span></h1>
-            <p>Oberliga Niederrhein • Hinrunde Saison 2026/27</p>
+            <p>Oberliga Niederrhein • Hin u. Rückrunde Saison 2026/27</p>
         </div>
         <button class="btn btn-refresh" onclick="fetchScoresFromGoogleSheet()">Aktualisieren</button>
     </header>
@@ -375,7 +375,7 @@
         <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
             <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
         </svg>
-        <span>Dieses Dashboard wird synchronisiert von Jürgen Schützendorf. Ergebnisse werden sofort nach Abpfiff aktualisiert!</span>
+        <span>Dieses Dashboard wird synchronisiert von Jürgen Schützendorf.</span>
     </div>
 
     <!-- Live Statistics Dashboard -->
@@ -421,14 +421,14 @@
 </div>
 
 <script>
-    // Spielplan Hinrunde 26/27
+    // Spielplan Hin u. Rückrunde 26/27
     const rawMatches = [
         { id: 1, date: "Fr., 14.08.2026 - 19:30 Uhr", teamHome: "SV Scherpenberg", teamAway: "ETB SW Essen", isHome: true },
         { id: 2, date: "So., 23.08.2026 - 15:00 Uhr", teamHome: "SV Sonsbeck", teamAway: "SV Scherpenberg", isHome: false },
         { id: 3, date: "So., 30.08.2026 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "TSV Meerbusch", isHome: true },
-        { id: 4, date: "Fr., 04.09.2026 - 19:30 Uhr", teamHome: "Krefelder FC Uerdingen", teamAway: "SV Scherpenberg", isHome: false },
+        { id: 4, date: "Fr., 04.09.2026 - 19:30 Uhr", teamHome: "KFC Uerdingen", teamAway: "SV Scherpenberg", isHome: false },
         { id: 5, date: "So., 13.09.2026 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "1. Spvg. Solingen-Wald", isHome: true },
-        { id: 6, date: "So., 20.09.2026 - 15:00 Uhr", teamHome: "VfL Viktoria Jüchen-G.", teamAway: "SV Scherpenberg", isHome: false },
+        { id: 6, date: "So., 20.09.2026 - 15:00 Uhr", teamHome: "VfL Jüchen-Garzweiler", teamAway: "SV Scherpenberg", isHome: false },
         { id: 7, date: "So., 27.09.2026 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "1. FC Monheim", isHome: true },
         { id: 8, date: "So., 04.10.2026 - 15:00 Uhr", teamHome: "Ratingen 04/19", teamAway: "SV Scherpenberg", isHome: false },
         { id: 9, date: "So., 11.10.2026 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "Wuppertaler SV", isHome: true },
@@ -439,7 +439,24 @@
         { id: 14, date: "Fr., 27.11.2026 - 20:00 Uhr", teamHome: "Holzheimer SG", teamAway: "SV Scherpenberg", isHome: false },
         { id: 15, date: "So., 06.12.2026 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "Fortuna Düsseldorf U23", isHome: true },
         { id: 16, date: "So., 13.12.2026 - 14:15 Uhr", teamHome: "SF Baumberg", teamAway: "SV Scherpenberg", isHome: false },
-        { id: 17, date: "So., 20.12.2026 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "SSVg Velbert 02", isHome: true }
+        { id: 17, date: "So., 20.12.2026 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "SSVg Velbert", isHome: true },
+        { id: 18, date: "So., 14.02.2027 - 15:00 Uhr", teamHome: "ETB SW Essen", teamAway: "SV Scherpenberg", isHome: false },
+        { id: 19, date: "So., 21.02.2027 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "SV Sonsbeck", isHome: true },
+        { id: 20, date: "So., 28.02.2027 - 15:00 Uhr", teamHome: "TSV Meerbusch", teamAway: "SV Scherpenberg", isHome: false },
+        { id: 21, date: "So., 07.03.2027 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "KFC Uerdingen", isHome: true },
+        { id: 22, date: "So., 14.03.2027 - 15:00 Uhr", teamHome: "1. Spvg. Solingen-Wald", teamAway: "SV Scherpenberg", isHome: false },
+        { id: 23, date: "So., 21.03.2027 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "VfL Jüchen-Garzweiler", isHome: true },
+        { id: 24, date: "Do., 25.03.2027 - 20:00 Uhr", teamHome: "1. FC Monheim", teamAway: "SV Scherpenberg", isHome: false },
+        { id: 25, date: "So., 04.04.2027 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "Ratingen 04/19", isHome: true },
+        { id: 26, date: "Fr., 09.04.2027 - 19:30 Uhr", teamHome: "Wuppertaler SV", teamAway: "SV Scherpenberg", isHome: false },
+        { id: 27, date: "So., 18.04.2027 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "SpVg Schonnebeck", isHome: true },
+        { id: 28, date: "So., 25.04.2027 - 15:00 Uhr", teamHome: "FC Büderich", teamAway: "SV Scherpenberg", isHome: false },
+        { id: 29, date: "So., 02.05.2027 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "BW Dingden", isHome: true },
+        { id: 30, date: "So., 09.05.2027 - 15:30 Uhr", teamHome: "SC St. Tönis 11/20", teamAway: "SV Scherpenberg", isHome: false },
+        { id: 31, date: "So., 23.05.2027 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "Holzheimer SG", isHome: true },
+        { id: 32, date: "Fr., 28.05.2027 - 19:30 Uhr", teamHome: "Fortuna Düsseldorf U23", teamAway: "SV Scherpenberg", isHome: false },
+        { id: 33, date: "So., 06.06.2027 - 15:00 Uhr", teamHome: "SV Scherpenberg", teamAway: "SF Baumberg", isHome: true },
+        { id: 34, date: "Fr., 11.06.2027 - 19:30 Uhr", teamHome: "SSVg Velbert", teamAway: "SV Scherpenberg", isHome: false }
     ];
 
     // Dein Google Sheet CSV Link
