@@ -102,7 +102,7 @@
             color: var(--accent-blue);
         }
 
-        /* Dynamische Statusfarben für die Tabellenplatz-Kachel */
+        /* Dynamische Statusfarben für die Tabellenplatz-Kachel oben */
         .stat-card.win {
             background-color: rgba(46, 160, 67, 0.25) !important;
             border: 2px solid #2ea043 !important;
@@ -181,6 +181,22 @@
             display: flex;
             flex-direction: column;
             transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        /* Farbanpassungen für die einzelnen Spielkacheln unten */
+        .match-card.win {
+            background-color: rgba(46, 160, 67, 0.12) !important;
+            border: 1.5px solid #2ea043 !important;
+        }
+
+        .match-card.loss {
+            background-color: rgba(248, 81, 73, 0.12) !important;
+            border: 1.5px solid #f85149 !important;
+        }
+
+        .match-card.draw {
+            background-color: rgba(212, 175, 55, 0.12) !important;
+            border: 1.5px solid #d4af37 !important;
         }
 
         .match-card:hover {
@@ -563,24 +579,25 @@
 
             let statusText = "Noch nicht gespielt";
             let statusClass = "not-played";
+            let cardOutcomeClass = ""; // Für die Kacheleinfärbung
             
             if (isPlayed) {
                 const h = parseInt(result.homeScore);
                 const a = parseInt(result.awayScore);
                 
                 if (match.isHome) {
-                    if (h > a) { statusText = "Sieg (3P)"; statusClass = "win"; }
-                    else if (h < a) { statusText = "Niederlage (0P)"; statusClass = "loss"; }
-                    else { statusText = "Unentschieden (1P)"; statusClass = "draw"; }
+                    if (h > a) { statusText = "Sieg (3P)"; statusClass = "win"; cardOutcomeClass = "win"; }
+                    else if (h < a) { statusText = "Niederlage (0P)"; statusClass = "loss"; cardOutcomeClass = "loss"; }
+                    else { statusText = "Unentschieden (1P)"; statusClass = "draw"; cardOutcomeClass = "draw"; }
                 } else {
-                    if (a > h) { statusText = "Sieg (3P)"; statusClass = "win"; }
-                    else if (a < h) { statusText = "Niederlage (0P)"; statusClass = "loss"; }
-                    else { statusText = "Unentschieden (1P)"; statusClass = "draw"; }
+                    if (a > h) { statusText = "Sieg (3P)"; statusClass = "win"; cardOutcomeClass = "win"; }
+                    else if (a < h) { statusText = "Niederlage (0P)"; statusClass = "loss"; cardOutcomeClass = "loss"; }
+                    else { statusText = "Unentschieden (1P)"; statusClass = "draw"; cardOutcomeClass = "draw"; }
                 }
             }
 
             const card = document.createElement("div");
-            card.className = "match-card";
+            card.className = `match-card ${cardOutcomeClass}`;
             card.innerHTML = `
                 <div class="match-header">
                     <span class="type-tag ${match.isHome ? 'heim' : 'auswaerts'}">${match.isHome ? 'Heim' : 'Auswärts'}</span>
@@ -646,7 +663,6 @@
                     else { points += 1; draws++; }
                 }
 
-                // Aktualisiert fortlaufend auf das allerletzte gespielte Spiel
                 if (isWin) lastMatchResult = 'win';
                 else if (isLoss) lastMatchResult = 'loss';
                 else lastMatchResult = 'draw';
