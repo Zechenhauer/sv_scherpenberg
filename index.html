@@ -77,6 +77,7 @@
             border-radius: 8px;
             padding: 20px;
             text-align: center;
+            transition: all 0.3s ease;
         }
 
         .stat-card h3 {
@@ -99,6 +100,22 @@
 
         .stat-card .value.position {
             color: var(--accent-blue);
+        }
+
+        /* Dynamische Statusfarben für die Tabellenplatz-Kachel */
+        .stat-card.win {
+            background-color: rgba(46, 160, 67, 0.2) !important;
+            border: 1px solid #2ea043 !important;
+        }
+
+        .stat-card.loss {
+            background-color: rgba(248, 81, 73, 0.2) !important;
+            border: 1px solid #f85149 !important;
+        }
+
+        .stat-card.draw {
+            background-color: rgba(139, 148, 158, 0.2) !important;
+            border: 1px solid #8b949e !important;
         }
 
         /* Filters & Actions */
@@ -384,8 +401,8 @@
 
     <!-- Live Statistics Dashboard -->
     <div class="overview-grid">
-        <div class="stat-card">
-            <h3>Platz</h3>
+        <div class="stat-card" id="card-tabellenplatz">
+            <h3>Tabellenplatz</h3>
             <div class="value position" id="stats-position">-</div>
         </div>
         <div class="stat-card">
@@ -507,7 +524,7 @@
         const lines = csvText.split(/\r?\n/);
         if (lines.length <= 1) return;
 
-        // Liest den Tabellenplatz gezielt aus Zelle E2 (Index 1 in Zeilen, Index 4 in Spalten)
+        // Liest den Tabellenplatz aus Zelle E2
         const firstDataRow = lines[1].split(",");
         if (firstDataRow.length >= 5 && firstDataRow[4].trim() !== "") {
             currentLeaguePosition = firstDataRow[4].trim();
@@ -599,6 +616,7 @@
         let losses = 0;
         let goalsShot = 0;
         let goalsConceded = 0;
+        let lastMatchResult = null;
 
         rawMatches.forEach(match => {
             const res = matchResults[match.id];
@@ -611,19 +629,26 @@
                 const h = parseInt(res.homeScore);
                 const a = parseInt(res.awayScore);
 
+                let isWin = false;
+                let isLoss = false;
+
                 if (match.isHome) {
                     goalsShot += h;
                     goalsConceded += a;
-                    if (h > a) { points += 3; wins++; }
-                    else if (h < a) { losses++; }
+                    if (h > a) { points += 3; wins++; isWin = true; }
+                    else if (h < a) { losses++; isLoss = true; }
                     else { points += 1; draws++; }
                 } else {
                     goalsShot += a;
                     goalsConceded += h;
-                    if (a > h) { points += 3; wins++; }
-                    else if (a < h) { losses++; }
+                    if (a > h) { points += 3; wins++; isWin = true; }
+                    else if (a < h) { losses++; isLoss = true; }
                     else { points += 1; draws++; }
                 }
+
+                if (isWin) lastMatchResult = 'win';
+                else if (isLoss) lastMatchResult = 'loss';
+                else lastMatchResult = 'draw';
             }
         });
 
@@ -632,6 +657,13 @@
         document.getElementById("stats-points").textContent = points;
         document.getElementById("stats-record").textContent = `${wins} - ${draws} - ${losses}`;
         document.getElementById("stats-goals").textContent = `${goalsShot} : ${goalsConceded}`;
+
+        // Tabellenplatz-Kachel basierend auf dem letzten Spiel einfärben
+        const posCard = document.getElementById("card-tabellenplatz");
+        posCard.classList.remove("win", "loss", "draw");
+        if (lastMatchResult) {
+            posCard.classList.add(lastMatchResult);
+        }
     }
 
     function filterMatches(filter, button) {
