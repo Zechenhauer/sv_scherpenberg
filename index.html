@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SV Scherpenberg - Hinrunden-Ergebnisse 26/27</title>
+    <title>SV Scherpenberg - Hin- und Rückrunden-Ergebnisse 26/27</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -382,7 +382,7 @@
     <div class="overview-grid">
         <div class="stat-card">
             <h3>Spiele</h3>
-            <div class="value" id="stats-played">0 / 17</div>
+            <div class="value" id="stats-played">0 / 0</div>
         </div>
         <div class="stat-card">
             <h3>Punkte</h3>
@@ -613,7 +613,8 @@
             }
         });
 
-        document.getElementById("stats-played").textContent = `${played} / 17`;
+        // Dynamische Gesamtzahl der Spiele statt fitter "17"
+        document.getElementById("stats-played").textContent = `${played} / ${rawMatches.length}`;
         document.getElementById("stats-points").textContent = points;
         document.getElementById("stats-record").textContent = `${wins} - ${draws} - ${losses}`;
         document.getElementById("stats-goals").textContent = `${goalsShot} : ${goalsConceded}`;
