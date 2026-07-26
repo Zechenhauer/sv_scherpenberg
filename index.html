@@ -104,18 +104,18 @@
 
         /* Dynamische Statusfarben für die Tabellenplatz-Kachel */
         .stat-card.win {
-            background-color: rgba(46, 160, 67, 0.2) !important;
-            border: 1px solid #2ea043 !important;
+            background-color: rgba(46, 160, 67, 0.25) !important;
+            border: 2px solid #2ea043 !important;
         }
 
         .stat-card.loss {
-            background-color: rgba(248, 81, 73, 0.2) !important;
-            border: 1px solid #f85149 !important;
+            background-color: rgba(248, 81, 73, 0.25) !important;
+            border: 2px solid #f85149 !important;
         }
 
         .stat-card.draw {
-            background-color: rgba(139, 148, 158, 0.2) !important;
-            border: 1px solid #8b949e !important;
+            background-color: rgba(212, 175, 55, 0.25) !important;
+            border: 2px solid #d4af37 !important;
         }
 
         /* Filters & Actions */
@@ -646,6 +646,7 @@
                     else { points += 1; draws++; }
                 }
 
+                // Aktualisiert fortlaufend auf das allerletzte gespielte Spiel
                 if (isWin) lastMatchResult = 'win';
                 else if (isLoss) lastMatchResult = 'loss';
                 else lastMatchResult = 'draw';
@@ -661,6 +662,7 @@
         // Tabellenplatz-Kachel basierend auf dem letzten Spiel einfärben
         const posCard = document.getElementById("card-tabellenplatz");
         posCard.classList.remove("win", "loss", "draw");
+        
         if (lastMatchResult) {
             posCard.classList.add(lastMatchResult);
         }
