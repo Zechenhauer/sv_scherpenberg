@@ -45,6 +45,8 @@
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 20px;
             margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .header-title-wrapper {
@@ -80,6 +82,28 @@
         .header-title p {
             color: var(--text-muted);
             font-size: 1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-table {
+            background-color: var(--primary-gold);
+            color: #000000;
+            border: 1px solid var(--primary-gold);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-table:hover {
+            background-color: var(--primary-gold-hover);
+            border-color: var(--primary-gold-hover);
+            color: #000000;
         }
 
         /* Dashboard Overview Grid */
@@ -410,6 +434,10 @@
             .header-title h1 {
                 font-size: 1.6rem;
             }
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
             .toolbar {
                 flex-direction: column;
                 align-items: stretch;
@@ -434,7 +462,10 @@
             </div>
             <img src="https://lh3.googleusercontent.com/d/1IaQuNKW718ZOezl-lcn6gNw3ndY3vJgf" alt="SV Scherpenberg Logo" class="header-logo">
         </div>
-        <button class="btn btn-refresh" onclick="fetchScoresFromGoogleSheet()">Aktualisieren</button>
+        <div class="header-actions">
+            <a href="https://zechenhauer.github.io/Tabelle_Oberliga_Nordrhein_26_27/" target="_blank" class="btn btn-table">📊 Zur Tabelle</a>
+            <button class="btn btn-refresh" onclick="fetchScoresFromGoogleSheet()">Aktualisieren</button>
+        </div>
     </header>
 
     <div class="info-box">
