@@ -47,6 +47,25 @@
             margin-bottom: 30px;
         }
 
+        .header-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            object-fit: contain;
+            border: 2px solid var(--accent-blue);
+            background: #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            padding: 2px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
         .header-title h1 {
             font-size: 2.2rem;
             color: #ffffff;
@@ -384,6 +403,13 @@
                 align-items: flex-start;
                 gap: 15px;
             }
+            .header-logo {
+                width: 45px;
+                height: 45px;
+            }
+            .header-title h1 {
+                font-size: 1.6rem;
+            }
             .toolbar {
                 flex-direction: column;
                 align-items: stretch;
@@ -401,9 +427,12 @@
 
 <div class="container">
     <header>
-        <div class="header-title">
-            <h1>SV Scherpenberg <span>Live-Planer</span></h1>
-            <p>Oberliga Niederrhein • Hin u. Rückrunde Saison 2026/27</p>
+        <div class="header-title-wrapper">
+            <div class="header-title">
+                <h1>SV Scherpenberg <span>Live-Planer</span></h1>
+                <p>Oberliga Niederrhein • Hin u. Rückrunde Saison 2026/27</p>
+            </div>
+            <img src="https://lh3.googleusercontent.com/d/1IaQuNKW718ZOezl-lcn6gNw3ndY3vJgf" alt="SV Scherpenberg Logo" class="header-logo">
         </div>
         <button class="btn btn-refresh" onclick="fetchScoresFromGoogleSheet()">Aktualisieren</button>
     </header>
@@ -540,13 +569,11 @@
         const lines = csvText.split(/\r?\n/);
         if (lines.length <= 1) return;
 
-        // Liest den Tabellenplatz aus Zelle E2
         const firstDataRow = lines[1].split(",");
         if (firstDataRow.length >= 5 && firstDataRow[4].trim() !== "") {
             currentLeaguePosition = firstDataRow[4].trim();
         }
 
-        // Liest die Ergebnisse ab Zeile 2 aus
         for (let i = 1; i < lines.length; i++) {
             const row = lines[i].split(",");
             if (row.length >= 3) {
@@ -579,7 +606,7 @@
 
             let statusText = "Noch nicht gespielt";
             let statusClass = "not-played";
-            let cardOutcomeClass = ""; // Für die Kacheleinfärbung
+            let cardOutcomeClass = "";
             
             if (isPlayed) {
                 const h = parseInt(result.homeScore);
@@ -675,7 +702,6 @@
         document.getElementById("stats-record").textContent = `${wins} - ${draws} - ${losses}`;
         document.getElementById("stats-goals").textContent = `${goalsShot} : ${goalsConceded}`;
 
-        // Tabellenplatz-Kachel basierend auf dem letzten Spiel einfärben
         const posCard = document.getElementById("card-tabellenplatz");
         posCard.classList.remove("win", "loss", "draw");
         
