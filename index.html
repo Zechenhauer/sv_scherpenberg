@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SV Scherpenberg - Hin- und Rückrunden-Ergebnisse 26/27</title>
+    <!-- Supabase Client Bibliothek laden -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -15,6 +17,7 @@
             --primary-gold-hover: #bda031;
             --accent-blue: #58a6ff;
             --success-green: #2ea043;
+            --danger-red: #ff5252;
             --scherpenberg-blue: #0c2340;
         }
 
@@ -47,6 +50,7 @@
             margin-bottom: 30px;
             flex-wrap: wrap;
             gap: 15px;
+            position: relative;
         }
 
         .header-title-wrapper {
@@ -90,6 +94,23 @@
             gap: 10px;
         }
 
+        /* --- ADMIN SCHLOSS BUTTON --- */
+        .admin-lock {
+            background: #21262d;
+            border: 1px solid var(--border-color);
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .admin-lock.unlocked {
+            color: var(--success-green);
+            border-color: var(--success-green);
+            background: rgba(46, 160, 67, 0.1);
+        }
+
         .btn-table {
             background-color: var(--primary-gold);
             color: #000000;
@@ -98,12 +119,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
         .btn-table:hover {
             background-color: var(--primary-gold-hover);
-            border-color: var(--primary-gold-hover);
-            color: #000000;
         }
 
         /* Dashboard Overview Grid */
@@ -123,6 +146,14 @@
             transition: all 0.3s ease;
         }
 
+        .stat-card.clickable {
+            cursor: pointer;
+        }
+        .stat-card.clickable:hover {
+            border-color: var(--primary-gold);
+            transform: translateY(-2px);
+        }
+
         .stat-card h3 {
             font-size: 0.9rem;
             color: var(--text-muted);
@@ -137,31 +168,14 @@
             color: #ffffff;
         }
 
-        .stat-card .value.points {
-            color: var(--primary-gold);
-        }
+        .stat-card .value.points { color: var(--primary-gold); }
+        .stat-card .value.position { color: var(--accent-blue); }
 
-        .stat-card .value.position {
-            color: var(--accent-blue);
-        }
+        .stat-card.win { background-color: rgba(46, 160, 67, 0.25) !important; border: 2px solid #2ea043 !important; }
+        .stat-card.loss { background-color: rgba(248, 81, 73, 0.25) !important; border: 2px solid #f85149 !important; }
+        .stat-card.draw { background-color: rgba(212, 175, 55, 0.25) !important; border: 2px solid #d4af37 !important; }
 
-        /* Dynamische Statusfarben für die Tabellenplatz-Kachel oben */
-        .stat-card.win {
-            background-color: rgba(46, 160, 67, 0.25) !important;
-            border: 2px solid #2ea043 !important;
-        }
-
-        .stat-card.loss {
-            background-color: rgba(248, 81, 73, 0.25) !important;
-            border: 2px solid #f85149 !important;
-        }
-
-        .stat-card.draw {
-            background-color: rgba(212, 175, 55, 0.25) !important;
-            border: 2px solid #d4af37 !important;
-        }
-
-        /* Filters & Actions */
+        /* Toolbar */
         .toolbar {
             display: flex;
             justify-content: space-between;
@@ -199,16 +213,6 @@
             border-color: var(--primary-gold);
         }
 
-        .btn-refresh {
-            background-color: #21262d;
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
-        }
-
-        .btn-refresh:hover {
-            background-color: rgba(88, 166, 255, 0.1);
-        }
-
         /* Match Grid */
         .matches-grid {
             display: grid;
@@ -224,28 +228,20 @@
             display: flex;
             flex-direction: column;
             transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
         }
 
-        /* Farbanpassungen für die einzelnen Spielkacheln unten */
-        .match-card.win {
-            background-color: rgba(46, 160, 67, 0.12) !important;
-            border: 1.5px solid #2ea043 !important;
+        body.admin-mode .match-card {
+            cursor: pointer;
+            border-style: dashed;
+        }
+        body.admin-mode .match-card:hover {
+            border-color: var(--primary-gold);
         }
 
-        .match-card.loss {
-            background-color: rgba(248, 81, 73, 0.12) !important;
-            border: 1.5px solid #f85149 !important;
-        }
-
-        .match-card.draw {
-            background-color: rgba(212, 175, 55, 0.12) !important;
-            border: 1.5px solid #d4af37 !important;
-        }
-
-        .match-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-        }
+        .match-card.win { background-color: rgba(46, 160, 67, 0.12) !important; border: 1.5px solid #2ea043 !important; }
+        .match-card.loss { background-color: rgba(248, 81, 73, 0.12) !important; border: 1.5px solid #f85149 !important; }
+        .match-card.draw { background-color: rgba(212, 175, 55, 0.12) !important; border: 1.5px solid #d4af37 !important; }
 
         .match-header {
             display: flex;
@@ -265,21 +261,9 @@
             font-size: 0.75rem;
         }
 
-        .match-header .type-tag.heim {
-            background-color: rgba(212, 175, 55, 0.15);
-            color: var(--primary-gold);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-        }
-
-        .match-header .type-tag.auswaerts {
-            background-color: rgba(255, 255, 255, 0.08);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .match-header .date {
-            color: var(--text-muted);
-        }
+        .match-header .type-tag.heim { background-color: rgba(212, 175, 55, 0.15); color: var(--primary-gold); border: 1px solid rgba(212, 175, 55, 0.3); }
+        .match-header .type-tag.auswaerts { background-color: rgba(255, 255, 255, 0.08); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.15); }
+        .match-header .date { color: var(--text-muted); }
 
         .match-body {
             padding: 20px 15px;
@@ -307,13 +291,8 @@
             text-overflow: ellipsis;
         }
 
-        .vs {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            font-weight: normal;
-        }
+        .vs { color: var(--text-muted); font-size: 0.8rem; font-weight: normal; }
 
-        /* Read-Only Result Display */
         .result-display-container {
             display: flex;
             align-items: center;
@@ -336,16 +315,8 @@
             color: #ffffff;
         }
 
-        .score-badge.empty {
-            color: #30363d;
-            font-size: 1.1rem;
-        }
-
-        .score-divider {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: var(--text-muted);
-        }
+        .score-badge.empty { color: #30363d; font-size: 1.1rem; }
+        .score-divider { font-size: 1.4rem; font-weight: bold; color: var(--text-muted); }
 
         .match-footer {
             padding: 12px 15px;
@@ -356,28 +327,58 @@
             align-items: center;
         }
 
-        .match-status {
-            font-size: 0.85rem;
-            font-weight: bold;
-        }
+        .match-status { font-size: 0.85rem; font-weight: bold; }
+        .match-status.not-played { color: var(--text-muted); }
+        .match-status.win { color: #3fb950; }
+        .match-status.loss { color: #f85149; }
+        .match-status.draw { color: var(--primary-gold); }
 
-        .match-status.not-played {
-            color: var(--text-muted);
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            justify-content: center; align-items: center;
+            z-index: 100;
+            padding: 15px;
         }
-
-        .match-status.win {
-            color: #3fb950;
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
         }
-
-        .match-status.loss {
-            color: #f85149;
+        .modal-content h3 { margin-bottom: 15px; font-size: 1.1rem; }
+        .score-inputs-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
         }
-
-        .match-status.draw {
-            color: var(--primary-gold);
+        .score-inputs-row input {
+            width: 60px;
+            height: 45px;
+            text-align: center;
+            font-size: 1.3rem;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
         }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-save { background: var(--success-green); color: #fff; flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { background: #444; color: #fff; flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-clear { background: var(--danger-red); color: #fff; width: 100%; padding: 8px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; }
 
-        /* Help Alert box */
         .info-box {
             background-color: rgba(88, 166, 255, 0.05);
             border: 1px solid rgba(88, 166, 255, 0.15);
@@ -389,65 +390,6 @@
             gap: 12px;
             color: #c9d1d9;
             font-size: 0.9rem;
-        }
-
-        .info-box svg {
-            color: var(--accent-blue);
-            flex-shrink: 0;
-        }
-
-        /* Loading Spinner */
-        .loading-overlay {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            gap: 10px;
-        }
-
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid var(--primary-gold);
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 600px) {
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-            .header-logo {
-                width: 45px;
-                height: 45px;
-            }
-            .header-title h1 {
-                font-size: 1.6rem;
-            }
-            .header-actions {
-                width: 100%;
-                justify-content: space-between;
-            }
-            .toolbar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .filter-buttons {
-                width: 100%;
-            }
-            .filter-buttons .btn {
-                flex-grow: 1;
-            }
         }
     </style>
 </head>
@@ -463,27 +405,24 @@
             <img src="https://lh3.googleusercontent.com/d/1IaQuNKW718ZOezl-lcn6gNw3ndY3vJgf" alt="SV Scherpenberg Logo" class="header-logo">
         </div>
         <div class="header-actions">
+            <button class="admin-lock" id="adminLockBtn" onclick="toggleAdminMode()" title="Admin Modus">🔒 Admin</button>
             <a href="https://zechenhauer.github.io/Tabelle_Oberliga_Nordrhein_26_27/" target="_blank" class="btn btn-table">📊 Zur Tabelle</a>
-            <button class="btn btn-refresh" onclick="fetchScoresFromGoogleSheet()">Aktualisieren</button>
         </div>
     </header>
 
     <div class="info-box">
-        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-        </svg>
-        <span>Dieses Dashboard wird synchronisiert von Jürgen Schützendorf.</span>
+        <span>Klicke auf das Schloss-Symbol 🔒 und gib die PIN (1919) ein. Im Admin-Modus kannst du Spielstände anklicken und oben auch den **Tabellenplatz** anpassen.</span>
     </div>
 
     <!-- Live Statistics Dashboard -->
     <div class="overview-grid">
-        <div class="stat-card" id="card-tabellenplatz">
-            <h3>Tabellenplatz</h3>
+        <div class="stat-card" id="card-tabellenplatz" onclick="openPositionModal()">
+            <h3 id="tableCardTitle">Tabellenplatz</h3>
             <div class="value position" id="stats-position">-</div>
         </div>
         <div class="stat-card">
             <h3>Spiele</h3>
-            <div class="value" id="stats-played">0 / 0</div>
+            <div class="value" id="stats-played">0 / 34</div>
         </div>
         <div class="stat-card">
             <h3>Punkte</h3>
@@ -499,7 +438,7 @@
         </div>
     </div>
 
-    <!-- Filters & Actions -->
+    <!-- Toolbar -->
     <div class="toolbar">
         <div class="filter-buttons">
             <button class="btn active" id="filter-all" onclick="filterMatches('all', this)">Alle Spiele</button>
@@ -509,19 +448,54 @@
         </div>
     </div>
 
-    <!-- Loading State -->
-    <div class="loading-overlay" id="loading-spinner">
-        <div class="spinner"></div>
-        <span>Daten werden aus Google Sheets geladen...</span>
-    </div>
-
     <!-- Match Grid List -->
-    <div class="matches-grid" id="matches-container" style="display: none;">
-        <!-- Dynamically populated -->
+    <div class="matches-grid" id="matches-container">
+        <!-- Dynamisch befüllt -->
+    </div>
+</div>
+
+<!-- Modal zum Eintragen der Spielstände -->
+<div class="modal" id="scoreModal">
+    <div class="modal-content">
+        <h3 id="modalMatchTitle">Spielstand eintragen</h3>
+        <div class="score-inputs-row">
+            <input type="number" id="modalHomeInput" min="0" placeholder="Heim">
+            <span class="score-divider">:</span>
+            <input type="number" id="modalAwayInput" min="0" placeholder="Gast">
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeModal()">Abbrechen</button>
+            <button class="btn-save" onclick="saveMatchScore()">Speichern</button>
+        </div>
+        <button class="btn-clear" onclick="clearMatchScore()">Ergebnis löschen</button>
+    </div>
+</div>
+
+<!-- Modal zum Eintragen des Tabellenplatzes -->
+<div class="modal" id="positionModal">
+    <div class="modal-content">
+        <h3>Tabellenplatz eintragen</h3>
+        <div class="score-inputs-row">
+            <input type="number" id="modalPositionInput" min="1" max="34" placeholder="Platz">
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closePositionModal()">Abbrechen</button>
+            <button class="btn-save" onclick="savePositionScore()">Speichern</button>
+        </div>
     </div>
 </div>
 
 <script>
+    // ==========================================
+    // SUPABASE EINSTELLUNGEN
+    // ==========================================
+    const SUPABASE_URL = 'https://lhusylpjnujlqomougmg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_yXEueWILvAq-Vm2VfTuYyg_BIQeE1KK';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const ADMIN_PIN = "1919";
+    let isAdmin = false;
+    let selectedMatchId = null;
     let currentLeaguePosition = "-";
 
     const rawMatches = [
@@ -561,62 +535,132 @@
         { id: 34, date: "Fr., 11.06.2027 - 19:30 Uhr", teamHome: "SSVg Velbert", teamAway: "SV Scherpenberg", isHome: false }
     ];
 
-    const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRhmvj4ykmLeefYb0_88dVcHOo9uzAI383OFk79N8yFb94C9bNWgvQNEmJwLibwoyKiJe1xDPNjUnQ/pub?gid=0&single=true&output=csv";
-
     let matchResults = {};
-    let currentFilter = "all";
 
     rawMatches.forEach(m => {
         matchResults[m.id] = { homeScore: "", awayScore: "" };
     });
 
-    async function fetchScoresFromGoogleSheet() {
-        const spinner = document.getElementById("loading-spinner");
-        const container = document.getElementById("matches-container");
-        
-        spinner.style.display = "flex";
-        container.style.display = "none";
-
+    async function loadDataFromSupabase() {
         try {
-            const response = await fetch(`${sheetCsvUrl}&t=${new Date().getTime()}`);
-            if (!response.ok) throw new Error("Fehler beim Abruf");
-            
-            const data = await response.text();
-            parseCsvData(data);
-            
-            spinner.style.display = "none";
-            container.style.display = "grid";
+            let { data, error } = await supabaseClient
+                .from('scherpenberg_matches')
+                .select('payload')
+                .eq('id', 'all_results')
+                .single();
+
+            if (data && data.payload) {
+                if (data.payload.leaguePosition !== undefined) {
+                    currentLeaguePosition = data.payload.leaguePosition;
+                }
+                matchResults = data.payload;
+            }
             renderMatches(currentFilter);
-        } catch (error) {
-            console.error("Fehler beim Abrufen der Ergebnisse:", error);
-            alert("Die Verbindung zu Google Sheets konnte nicht hergestellt werden.");
-            spinner.style.display = "none";
-            container.style.display = "grid";
+        } catch (e) {
+            console.error("Fehler beim Laden:", e);
             renderMatches(currentFilter);
         }
     }
 
-    function parseCsvData(csvText) {
-        const lines = csvText.split(/\r?\n/);
-        if (lines.length <= 1) return;
+    async function saveDataToSupabase() {
+        try {
+            matchResults.leaguePosition = currentLeaguePosition;
+            let { error } = await supabaseClient
+                .from('scherpenberg_matches')
+                .upsert({ id: 'all_results', payload: matchResults });
 
-        const firstDataRow = lines[1].split(",");
-        if (firstDataRow.length >= 5 && firstDataRow[4].trim() !== "") {
-            currentLeaguePosition = firstDataRow[4].trim();
+            if (error) alert("Fehler beim Speichern in Supabase!");
+            else loadDataFromSupabase();
+        } catch (e) {
+            console.error("Netzwerkfehler:", e);
         }
+    }
 
-        for (let i = 1; i < lines.length; i++) {
-            const row = lines[i].split(",");
-            if (row.length >= 3) {
-                const id = parseInt(row[0].trim());
-                const homeScoreStr = row[1].trim();
-                const awayScoreStr = row[2].trim();
-
-                if (matchResults[id]) {
-                    matchResults[id].homeScore = homeScoreStr === "" ? "" : parseInt(homeScoreStr);
-                    matchResults[id].awayScore = awayScoreStr === "" ? "" : parseInt(awayScoreStr);
-                }
+    function toggleAdminMode() {
+        if (!isAdmin) {
+            const pin = prompt("Admin-PIN eingeben:");
+            if (pin === ADMIN_PIN) {
+                isAdmin = true;
+                document.body.classList.add('admin-mode');
+                document.getElementById('adminLockBtn').textContent = "🔓 Admin";
+                document.getElementById('adminLockBtn').classList.add('unlocked');
+                document.getElementById('card-tabellenplatz').classList.add('clickable');
+                document.getElementById('tableCardTitle').textContent = "Tabellenplatz ✏️";
+                renderMatches(currentFilter);
+            } else if (pin !== null) {
+                alert("Falsche PIN!");
             }
+        } else {
+            isAdmin = false;
+            document.body.classList.remove('admin-mode');
+            document.getElementById('adminLockBtn').textContent = "🔒 Admin";
+            document.getElementById('adminLockBtn').classList.remove('unlocked');
+            document.getElementById('card-tabellenplatz').classList.remove('clickable');
+            document.getElementById('tableCardTitle').textContent = "Tabellenplatz";
+            renderMatches(currentFilter);
+        }
+    }
+
+    function openScoreModal(matchId) {
+        if (!isAdmin) return;
+        selectedMatchId = matchId;
+        const match = rawMatches.find(m => m.id === matchId);
+        const res = matchResults[matchId] || { homeScore: "", awayScore: "" };
+
+        document.getElementById('modalMatchTitle').textContent = `${match.teamHome} vs ${match.teamAway}`;
+        document.getElementById('modalHomeInput').value = res.homeScore !== undefined ? res.homeScore : "";
+        document.getElementById('modalAwayInput').value = res.awayScore !== undefined ? res.awayScore : "";
+        document.getElementById('scoreModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('scoreModal').style.display = 'none';
+        selectedMatchId = null;
+    }
+
+    function saveMatchScore() {
+        if (!isAdmin || selectedMatchId === null) return;
+        const hVal = document.getElementById('modalHomeInput').value;
+        const aVal = document.getElementById('modalAwayInput').value;
+
+        if (hVal !== "" && aVal !== "") {
+            matchResults[selectedMatchId] = {
+                homeScore: parseInt(hVal),
+                awayScore: parseInt(aVal)
+            };
+            saveDataToSupabase();
+            closeModal();
+        } else {
+            alert("Bitte beide Tore-Zahlen eingeben.");
+        }
+    }
+
+    function clearMatchScore() {
+        if (!isAdmin || selectedMatchId === null) return;
+        matchResults[selectedMatchId] = { homeScore: "", awayScore: "" };
+        saveDataToSupabase();
+        closeModal();
+    }
+
+    function openPositionModal() {
+        if (!isAdmin) return;
+        document.getElementById('modalPositionInput').value = currentLeaguePosition !== "-" ? currentLeaguePosition : "";
+        document.getElementById('positionModal').style.display = 'flex';
+    }
+
+    function closePositionModal() {
+        document.getElementById('positionModal').style.display = 'none';
+    }
+
+    function savePositionScore() {
+        if (!isAdmin) return;
+        const val = document.getElementById('modalPositionInput').value;
+        if (val !== "") {
+            currentLeaguePosition = val;
+            saveDataToSupabase();
+            closePositionModal();
+        } else {
+            alert("Bitte einen gültigen Tabellenplatz eingeben.");
         }
     }
 
@@ -628,10 +672,9 @@
             if (filter === "heim" && !match.isHome) return;
             if (filter === "auswaerts" && match.isHome) return;
             
-            const result = matchResults[match.id];
-            const isPlayed = result.homeScore !== "" && result.awayScore !== "" && 
-                             result.homeScore !== undefined && result.awayScore !== undefined &&
-                             !isNaN(result.homeScore) && !isNaN(result.awayScore);
+            const result = matchResults[match.id] || { homeScore: "", awayScore: "" };
+            const isPlayed = result.homeScore !== "" && result.homeScore !== undefined && !isNaN(result.homeScore) &&
+                             result.awayScore !== "" && result.awayScore !== undefined && !isNaN(result.awayScore);
             
             if (filter === "played" && !isPlayed) return;
 
@@ -656,6 +699,10 @@
 
             const card = document.createElement("div");
             card.className = `match-card ${cardOutcomeClass}`;
+            if (isAdmin) {
+                card.onclick = () => openScoreModal(match.id);
+            }
+            
             card.innerHTML = `
                 <div class="match-header">
                     <span class="type-tag ${match.isHome ? 'heim' : 'auswaerts'}">${match.isHome ? 'Heim' : 'Auswärts'}</span>
@@ -695,11 +742,8 @@
 
         rawMatches.forEach(match => {
             const res = matchResults[match.id];
-            const isPlayed = res.homeScore !== "" && res.awayScore !== "" && 
-                             res.homeScore !== undefined && res.awayScore !== undefined &&
-                             !isNaN(res.homeScore) && !isNaN(res.awayScore);
-
-            if (isPlayed) {
+            if (res && res.homeScore !== "" && res.homeScore !== undefined && !isNaN(res.homeScore) &&
+                res.awayScore !== "" && res.awayScore !== undefined && !isNaN(res.awayScore)) {
                 played++;
                 const h = parseInt(res.homeScore);
                 const a = parseInt(res.awayScore);
@@ -735,12 +779,10 @@
 
         const posCard = document.getElementById("card-tabellenplatz");
         posCard.classList.remove("win", "loss", "draw");
-        
-        if (lastMatchResult) {
-            posCard.classList.add(lastMatchResult);
-        }
+        if (lastMatchResult) posCard.classList.add(lastMatchResult);
     }
 
+    let currentFilter = "all";
     function filterMatches(filter, button) {
         document.querySelectorAll('.filter-buttons .btn').forEach(b => b.classList.remove('active'));
         button.classList.add('active');
@@ -749,7 +791,7 @@
     }
 
     window.onload = () => {
-        fetchScoresFromGoogleSheet();
+        loadDataFromSupabase();
     };
 </script>
 
