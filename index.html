@@ -279,13 +279,26 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: bold;
         }
 
-        .team-label {
+        .team-container {
             width: 42%;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .team-logo {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .team-label {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -402,7 +415,7 @@
                 <h1>SV Scherpenberg <span>Live-Planer</span></h1>
                 <p>Oberliga Niederrhein • Hin u. Rückrunde Saison 2026/27</p>
             </div>
-            <img src="https://lh3.googleusercontent.com/d/1IaQuNKW718ZOezl-lcn6gNw3ndY3vJgf" alt="SV Scherpenberg Logo" class="header-logo">
+            <img src="https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/scherpenberg.png" alt="SV Scherpenberg Logo" class="header-logo">
         </div>
         <div class="header-actions">
             <button class="admin-lock" id="adminLockBtn" onclick="toggleAdminMode()" title="Admin Modus">🔒 Admin</button>
@@ -487,7 +500,7 @@
 
 <script>
     // ==========================================
-    // SUPABASE EINSTELLUNGEN
+    // SUPABASE EINSTELLUNGEN & VEREINSLOGOS
     // ==========================================
     const SUPABASE_URL = 'https://lhusylpjnujlqomougmg.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_yXEueWILvAq-Vm2VfTuYyg_BIQeE1KK';
@@ -497,6 +510,41 @@
     let isAdmin = false;
     let selectedMatchId = null;
     let currentLeaguePosition = "-";
+
+    // Zuordnung der Supabase-Logos zu den jeweiligen Vereinsnamen
+    const VEREINS_LOGOS = {
+        "SV Scherpenberg": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/scherpenberg.png",
+        "ETB SW Essen": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/swessen.png",
+        "SV Sonsbeck": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/sonsberg.png",
+        "TSV Meerbusch": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/meerbusch.png",
+        "KFC Uerdingen": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/uerdingen.png",
+        "1. Spvg. Solingen-Wald": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/solingen.png",
+        "VfL Jüchen-Garzweiler": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/juechen.png",
+        "1. FC Monheim": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/monheim.png",
+        "Ratingen 04/19": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/ratingen.png",
+        "Wuppertaler SV": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/wuppertal.png",
+        "SpVg Schonnebeck": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/schonnebeck.png",
+        "FC Büderich": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/buederich.png",
+        "BW Dingden": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/dingden.png",
+        "SC St. Tönis 11/20": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/toenis.png",
+        "Holzheimer SG": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/holzheim.png",
+        "F. Düsseldorf U23": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/duesseldorf.png",
+        "SF Baumberg": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/baumberg.png",
+        "SSVg Velbert": "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/velbert.png"
+    };
+
+    function getTeamHtml(teamName, isHomeTeam, isMatchHome) {
+        const logoUrl = VEREINS_LOGOS[teamName] || "https://lhusylpjnujlqomougmg.supabase.co/storage/v1/object/public/logos_scherpenberg/scherpenberg.png";
+        const isHighlighted = (teamName === "SV Scherpenberg") || (isHomeTeam && isMatchHome) || (!isHomeTeam && !isMatchHome);
+        const nameStyle = isHighlighted ? 'color: var(--primary-gold); font-weight: 800;' : '';
+
+        return `
+            <div class="team-container">
+                <img src="${logoUrl}" alt="${teamName}" class="team-logo">
+                <span class="team-label" style="${nameStyle}">${teamName}</span>
+            </div>
+        `;
+    }
 
     const rawMatches = [
         { id: 1, date: "Fr., 14.08.2026 - 19:30 Uhr", teamHome: "SV Scherpenberg", teamAway: "ETB SW Essen", isHome: true },
@@ -703,6 +751,9 @@
                 card.onclick = () => openScoreModal(match.id);
             }
             
+            const homeHtml = getTeamHtml(match.teamHome, true, match.isHome);
+            const awayHtml = getTeamHtml(match.teamAway, false, match.isHome);
+
             card.innerHTML = `
                 <div class="match-header">
                     <span class="type-tag ${match.isHome ? 'heim' : 'auswaerts'}">${match.isHome ? 'Heim' : 'Auswärts'}</span>
@@ -710,9 +761,9 @@
                 </div>
                 <div class="match-body">
                     <div class="teams-display">
-                        <span class="team-label" style="${match.isHome ? 'color: var(--primary-gold); font-weight: 800;' : ''}">${match.teamHome}</span>
+                        ${homeHtml}
                         <span class="vs">vs</span>
-                        <span class="team-label" style="${!match.isHome ? 'color: var(--primary-gold); font-weight: 800;' : ''}">${match.teamAway}</span>
+                        ${awayHtml}
                     </div>
                     <div class="result-display-container">
                         <div class="score-badge ${isPlayed ? '' : 'empty'}">${isPlayed ? result.homeScore : '-'}</div>
