@@ -8,8 +8,9 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23070f26%22/><text x=%2250%22 y=%2265%22 font-size=%2255%22 text-anchor=%22middle%22>⚽</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23070f26%22/><text x=%2250%22 y=%2265%22 font-size=%2255%22 text-anchor=%22middle%22>⚽</text></svg>">
 
-    <!-- Supabase Client Bibliothek laden -->
+    <!-- Supabase Client & Chart.js Bibliothek laden -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -350,6 +351,73 @@
         .match-status.loss { color: #f85149; }
         .match-status.draw { color: var(--primary-gold); }
 
+        /* Footer-Bereich unten (Zähler & Diagramm) */
+        .footer-action-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .visitor-left-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .visitor-counter-box {
+            background: #161b22;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .visitor-counter-box span {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .chart-trigger-btn {
+            background: #21262d;
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+        .chart-trigger-btn:hover { background: var(--accent-blue); color: #000; }
+
+        #visitorChartContainer {
+            display: none;
+            width: 100%;
+            background: #161b22;
+            border: 1px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        #visitorChartContainer h4 {
+            color: #ffffff;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin: 0 0 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         /* Modals */
         .modal {
             display: none;
@@ -469,6 +537,26 @@
     <div class="matches-grid" id="matches-container">
         <!-- Dynamisch befüllt -->
     </div>
+
+    <!-- FOOTER (BESUCHER-ZÄHLER & DIAGRAMM) -->
+    <div class="footer-action-row">
+        <div class="visitor-left-group">
+            <div class="visitor-counter-box" title="Dauerhafte App-Aufrufe">
+                👁️ Aufrufe: <span id="visitorCountDisplay">-</span>
+            </div>
+            <button class="chart-trigger-btn" onclick="toggleVisitorChart()">📊 Aufruf-Diagramm</button>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">⚡ Live-Planer & Management: Jürgen Schützendorf</div>
+    </div>
+
+    <!-- Aufruf-Diagramm Container (Aufklappbar) -->
+    <div id="visitorChartContainer">
+        <h4>
+            <span>📈 Tägliche Seitenaufrufe (letzte 7 Tage)</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted); cursor: pointer;" onclick="toggleVisitorChart()">✖ Schließen</span>
+        </h4>
+        <canvas id="visitorChart" style="max-height: 160px; width: 100%;"></canvas>
+    </div>
 </div>
 
 <!-- Modal zum Eintragen der Spielstände -->
@@ -514,6 +602,8 @@
     let isAdmin = false;
     let selectedMatchId = null;
     let currentLeaguePosition = "-";
+    let visitorChartInstance = null;
+    let isChartOpen = false;
 
     // Zuordnung der Supabase-Logos zu den jeweiligen Vereinsnamen
     const VEREINS_LOGOS = {
@@ -587,11 +677,73 @@
         { id: 34, date: "Fr., 11.06.2027 - 19:30 Uhr", teamHome: "SSVg Velbert", teamAway: "SV Scherpenberg", isHome: false }
     ];
 
-    let matchResults = {};
+    let matchResults = { visitorCount: 0 };
 
     rawMatches.forEach(m => {
         matchResults[m.id] = { homeScore: "", awayScore: "" };
     });
+
+    function trackVisitorDaily() {
+        let today = new Date().toISOString().split('T')[0];
+        let visitorStats = JSON.parse(localStorage.getItem('scherpenberg_planer_visitor_stats') || '{}');
+        visitorStats[today] = (visitorStats[today] || 0) + 1;
+        localStorage.setItem('scherpenberg_planer_visitor_stats', JSON.stringify(visitorStats));
+    }
+
+    function toggleVisitorChart() {
+        let container = document.getElementById('visitorChartContainer');
+        isChartOpen = !isChartOpen;
+        if (isChartOpen) {
+            container.style.display = 'block';
+            renderVisitorChart();
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    function renderVisitorChart() {
+        let visitorStats = JSON.parse(localStorage.getItem('scherpenberg_planer_visitor_stats') || '{}');
+        let labels = [];
+        let dataValues = [];
+        
+        for (let i = 6; i >= 0; i--) {
+            let d = new Date();
+            d.setDate(d.getDate() - i);
+            let dateStr = d.toISOString().split('T')[0];
+            let displayLabel = d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' });
+            
+            labels.push(displayLabel);
+            dataValues.push(visitorStats[dateStr] || 0);
+        }
+
+        const ctx = document.getElementById('visitorChart').getContext('2d');
+        if (visitorChartInstance) {
+            visitorChartInstance.destroy();
+        }
+
+        visitorChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Seitenaufrufe',
+                    data: dataValues,
+                    backgroundColor: '#d4af37',
+                    borderColor: '#30363d',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: '#30363d' } },
+                    y: { ticks: { color: '#8b949e', font: { size: 10 }, stepSize: 1 }, grid: { color: '#30363d' }, beginAtZero: true }
+                }
+            }
+        });
+    }
 
     async function loadDataFromSupabase() {
         try {
@@ -605,11 +757,22 @@
                 if (data.payload.leaguePosition !== undefined) {
                     currentLeaguePosition = data.payload.leaguePosition;
                 }
-                matchResults = data.payload;
+                if (data.payload.visitorCount !== undefined) {
+                    matchResults.visitorCount = data.payload.visitorCount;
+                }
+                matchResults = { ...matchResults, ...data.payload };
             }
+
+            matchResults.visitorCount = (matchResults.visitorCount || 0) + 1;
+            trackVisitorDaily();
+            saveDataToSupabaseSilent();
+
+            document.getElementById('visitorCountDisplay').textContent = matchResults.visitorCount;
             renderMatches(currentFilter);
         } catch (e) {
             console.error("Fehler beim Laden:", e);
+            trackVisitorDaily();
+            document.getElementById('visitorCountDisplay').textContent = matchResults.visitorCount || 1;
             renderMatches(currentFilter);
         }
     }
@@ -625,6 +788,17 @@
             else loadDataFromSupabase();
         } catch (e) {
             console.error("Netzwerkfehler:", e);
+        }
+    }
+
+    async function saveDataToSupabaseSilent() {
+        try {
+            matchResults.leaguePosition = currentLeaguePosition;
+            await supabaseClient
+                .from('scherpenberg_matches')
+                .upsert({ id: 'all_results', payload: matchResults });
+        } catch (e) {
+            console.error("Silent Sync Fehler:", e);
         }
     }
 
